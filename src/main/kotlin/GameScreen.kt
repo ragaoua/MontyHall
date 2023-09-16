@@ -1,5 +1,3 @@
-package screens.game
-
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -15,10 +13,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
-import screens.core.LabeledSwitch
-import screens.core.LabeledSwitchSelection
-import screens.core.Strategy
-import screens.core.conditional
 
 @Composable
 fun GameScreen() {
@@ -68,16 +62,16 @@ fun GameScreen() {
                     doors.forEachIndexed { index, door ->
                         Door(
                             door = door,
-                            doorNb = index+1,
+                            doorNb = index + 1,
                             onClick = {
-                                if(doors.none { it.isSelected }) {
+                                if (doors.none { it.isSelected }) {
                                     val winningOrRandomUnselectedDoor =
                                         doors.filterNot { it == door }.let { unselectedDoors ->
                                             unselectedDoors.find { it.isWinning }
                                                 ?: unselectedDoors.random()
                                         }
                                     doors = doors.map {
-                                        if(it != door && it != winningOrRandomUnselectedDoor) {
+                                        if (it != door && it != winningOrRandomUnselectedDoor) {
                                             it.copy(isOpen = true)
                                         } else it
                                     }

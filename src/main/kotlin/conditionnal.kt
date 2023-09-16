@@ -1,5 +1,3 @@
-package screens.core
-
 import androidx.compose.ui.Modifier
 
 fun Modifier.conditional(condition : Boolean, modifier : Modifier.() -> Modifier) : Modifier {
