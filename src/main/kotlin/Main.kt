@@ -9,7 +9,7 @@ import screens.game.GameScreen
 @Preview
 fun App() {
     //StrategySelectionScreen()
-    GameScreen(strategy = Strategy.KEEP)
+    GameScreen()
 }
 
 fun main() = application {

@@ -1,6 +1,8 @@
 package screens.game
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Button
@@ -13,18 +15,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
+import screens.core.LabeledSwitch
+import screens.core.LabeledSwitchSelection
 import screens.core.Strategy
 import screens.core.conditional
 
 @Composable
-fun GameScreen(
-    strategy: Strategy
-) {
+fun GameScreen() {
+    var strategy by remember {
+        mutableStateOf(Strategy.KEEP)
+    }
+
     var doors by remember {
         mutableStateOf(randomizeDoors())
-    }
-    var isDoorSelected by remember {
-        mutableStateOf(false)
     }
 
     var attempts by remember {
@@ -32,6 +35,10 @@ fun GameScreen(
     }
     var winningAttempts by remember {
         mutableStateOf(0)
+    }
+
+    var agentDelay: Long? by remember {
+        mutableStateOf(null)
     }
 
     MaterialTheme {
@@ -45,7 +52,9 @@ fun GameScreen(
                 verticalArrangement = Arrangement.Center
             ) {
                 Text(
-                    text = if(!isDoorSelected) "Step 1 : Choose a door" else "Step 2 : Change ?",
+                    text = if(doors.none { it.isSelected }) {
+                        "Step 1 : Choose a door"
+                    } else "Step 2 : Change ?",
                     style = MaterialTheme.typography.h4
                 )
 
@@ -61,16 +70,14 @@ fun GameScreen(
                             door = door,
                             doorNb = index+1,
                             onClick = {
-                                if(!isDoorSelected) {
-                                    isDoorSelected = true
-                                    // Open all doors but the one selected and a random other one
-                                    val randomUnselectedDoor =
+                                if(doors.none { it.isSelected }) {
+                                    val winningOrRandomUnselectedDoor =
                                         doors.filterNot { it == door }.let { unselectedDoors ->
                                             unselectedDoors.find { it.isWinning }
                                                 ?: unselectedDoors.random()
                                         }
                                     doors = doors.map {
-                                        if(it != door && it != randomUnselectedDoor) {
+                                        if(it != door && it != winningOrRandomUnselectedDoor) {
                                             it.copy(isOpen = true)
                                         } else it
                                     }
@@ -82,6 +89,11 @@ fun GameScreen(
                                     if (door.isWinning) {
                                         winningAttempts++
                                     }
+                                }
+                                doors = doors.map {
+                                    if (it == door) {
+                                        it.copy(isSelected = true)
+                                    } else it
                                 }
                             }
                         )
@@ -95,13 +107,95 @@ fun GameScreen(
                     style = MaterialTheme.typography.h6
                 )
 
-                Button(
-                    onClick = {
-                        doors = randomizeDoors()
-                        isDoorSelected = false
-                    }
+                Row (
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Text("Retry")
+                    Button(onClick = {
+                        doors = randomizeDoors()
+                    }) {
+                        Text("Retry")
+                    }
+
+                    Button(onClick = {
+                        attempts = 0
+                        winningAttempts = 0
+                        doors = randomizeDoors()
+                    }) {
+                        Text("Reset")
+                    }
+                }
+
+                Row (
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Button(onClick = {
+                        agentDelay = if (agentDelay == null) {
+                            1000L
+                        } else null
+                    }) {
+                        Text(
+                            agentDelay?.let { "Stop" } ?: "Start"
+                        )
+                    }
+
+                    Button(onClick = {
+                        agentDelay = agentDelay?.div(2)
+                    }) {
+                        Text("Faster")
+                    }
+                }
+
+                LabeledSwitch(
+                    lText = Strategy.SWITCH.toString(),
+                    rText = Strategy.KEEP.toString(),
+                    onValueChange = {
+                        strategy = if (it == LabeledSwitchSelection.LEFT) {
+                            Strategy.SWITCH
+                        } else Strategy.KEEP
+                    }
+                )
+            }
+        }
+    }
+
+    LaunchedEffect(agentDelay) {
+        agentDelay?.let {
+            while (true) {
+                delay(it)
+                if (doors.none { it.isSelected }) {
+                    doors.random().let { selectedDoor ->
+                        val winningOrRandomUnselectedDoor =
+                            doors.filterNot { it == selectedDoor }.let { unselectedDoors ->
+                                unselectedDoors.find { it.isWinning }
+                                    ?: unselectedDoors.random()
+                            }
+                        doors = doors.map {
+                            if (it == selectedDoor) {
+                                it.copy(isSelected = true)
+                            } else if (it != winningOrRandomUnselectedDoor) {
+                                it.copy(isOpen = true)
+                            } else it
+                        }
+                    }
+                } else if (doors.any { !it.isOpen }) {
+                    if (strategy == Strategy.SWITCH) {
+                        doors = doors.map {
+                            if (!it.isOpen) {
+                                it.copy(isSelected = !it.isSelected)
+                            } else it
+                        }
+                    }
+                    attempts++
+                    if (doors.find { it.isSelected }?.isWinning == true) {
+                        winningAttempts++
+                    }
+                    doors = doors.map {
+                        it.copy(isOpen = true)
+                    }
+                } else {
+                    doors = randomizeDoors()
                 }
             }
         }
@@ -120,10 +214,13 @@ fun Door(
     ) {
         Box(
             modifier = Modifier
+                .conditional(door.isSelected) {
+                    border(BorderStroke(
+                        width = 4.dp,
+                        color = Color.Gray
+                    ))
+                }
                 .padding(8.dp)
-                .conditional(!door.isOpen) {
-                    clickable(onClick = onClick)
-                },
         ) {
             Box(
                 modifier = Modifier
@@ -135,6 +232,9 @@ fun Door(
                             } else Color.Red
                         } else Color.Black
                     )
+                    .conditional(!door.isOpen) {
+                        clickable(onClick = onClick)
+                    }
             )
         }
         Spacer(modifier = Modifier.height(8.dp))
@@ -145,7 +245,7 @@ fun Door(
 fun randomizeDoors(): List<Door> {
     return (1..2)
         .map {
-            Door(id = it, isWinning = false)
+            Door(id = it)
         }
         .toMutableList()
         .apply {
