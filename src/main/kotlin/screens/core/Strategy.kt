@@ -1,4 +1,4 @@
-package Screens.strategy_selection
+package screens.core
 
 enum class Strategy {
     KEEP,

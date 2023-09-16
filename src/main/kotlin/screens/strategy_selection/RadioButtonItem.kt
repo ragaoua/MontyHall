@@ -1,7 +1,8 @@
-package Screens.strategy_selection
+package screens.strategy_selection
+
+import screens.core.Strategy
 
 data class RadioButtonItem(
     val isSelected: Boolean = false,
-    val label: String = "",
     val strategy: Strategy
 )

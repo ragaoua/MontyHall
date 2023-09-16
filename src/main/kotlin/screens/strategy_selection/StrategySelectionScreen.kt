@@ -1,5 +1,6 @@
-package Screens.strategy_selection
+package screens.strategy_selection
 
+import screens.core.Strategy
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
@@ -8,6 +9,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -16,11 +18,9 @@ fun StrategySelectionScreen() {
         mutableStateListOf(
             RadioButtonItem(
                 isSelected = true,
-                label = "Switch",
                 strategy = Strategy.KEEP
             ),
             RadioButtonItem(
-                label = "Keep",
                 strategy = Strategy.SWITCH
             )
         )
@@ -37,13 +37,15 @@ fun StrategySelectionScreen() {
             )  {
                 Text(
                     text = "Monty Hall",
-                    style = MaterialTheme.typography.h1
+                    style = MaterialTheme.typography.h1,
+                    textAlign = TextAlign.Center
                 )
                 Spacer(modifier = Modifier.height(32.dp))
 
                 Text(
                     text = "Select a strategy",
-                    style = MaterialTheme.typography.h4
+                    style = MaterialTheme.typography.h4,
+                    textAlign = TextAlign.Center
                 )
                 Spacer(modifier = Modifier.height(8.dp))
 
@@ -70,7 +72,7 @@ fun StrategySelectionScreen() {
                                 }
                             }
                         )
-                        Text(radioButton.label)
+                        Text(radioButton.strategy.toString())
                     }
                 }
 
