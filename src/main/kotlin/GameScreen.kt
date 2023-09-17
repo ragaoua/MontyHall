@@ -142,12 +142,12 @@ fun GameScreen() {
                 }
 
                 LabeledSwitch(
-                    lText = Strategy.SWITCH.toString(),
-                    rText = Strategy.KEEP.toString(),
+                    lText = Strategy.KEEP.toString(),
+                    rText = Strategy.SWITCH.toString(),
                     onValueChange = {
                         strategy = if (it == LabeledSwitchSelection.LEFT) {
-                            Strategy.SWITCH
-                        } else Strategy.KEEP
+                            Strategy.KEEP
+                        } else Strategy.SWITCH
                     }
                 )
             }
@@ -237,7 +237,7 @@ fun Door(
 }
 
 fun randomizeDoors(): List<Door> {
-    return (1..2)
+    return (1..6)
         .map {
             Door(id = it)
         }
