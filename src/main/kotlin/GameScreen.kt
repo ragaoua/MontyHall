@@ -77,7 +77,10 @@ fun GameScreen() {
                                     }
                                 } else {
                                     doors = doors.map {
-                                        it.copy(isOpen = true)
+                                        it.copy(
+                                            isOpen = true,
+                                            isSelected = it == door
+                                        )
                                     }
                                     attempts++
                                     if (door.isWinning) {
