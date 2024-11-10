@@ -137,9 +137,12 @@ fun GameScreen() {
                         )
                     }
 
-                    Button(onClick = {
-                        agentDelay = agentDelay?.div(2)
-                    }) {
+                    Button(
+                        onClick = {
+                            agentDelay = agentDelay?.div(2)
+                        },
+                        enabled = agentDelay?.let{ it > 3 } ?: false
+                    ) {
                         Text("Faster")
                     }
                 }
@@ -240,7 +243,7 @@ fun Door(
 }
 
 fun randomizeDoors(): List<Door> {
-    return (1..6)
+    return (1..9)
         .map {
             Door(id = it)
         }
